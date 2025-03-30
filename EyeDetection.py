@@ -1,7 +1,6 @@
 import cv2
 import dlib
 import numpy as np
-import datetime
 import csv
 import time
 import os
@@ -30,17 +29,8 @@ def eye_aspect_ratio(eye):
     return (A + B) / (2.0 * C)
 
 class EyeBlinkDetector:
-    def __init__(self, ear_threshold=0.25, camera_id=0, display=True):
-        # Get the absolute path of the current script
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        data_dir = os.path.join(base_path, "data") #Corrected path
-
-        # Ensure 'data' directory exists
-        os.makedirs(data_dir, exist_ok=True)
-
-        # Define the output file path
-        self.output_file = os.path.join(data_dir, "blinks_movements.csv")
-        
+    def __init__(self, output_file="blinks_movements.csv", ear_threshold=0.25, camera_id=0, display=True):
+        self.output_file = output_file
         self.ear_threshold = ear_threshold
         self.camera_id = camera_id
         self.display = display
@@ -56,7 +46,7 @@ class EyeBlinkDetector:
         self.frequent_movement_count = 0
         self.eye_positions = deque(maxlen=30)  # Store last 30 frames' eye positions
         self.movement_threshold = 5  # Adjust this value for sensitivity
-        self.start_time = time.time()
+        self.start_time = 0  # Start timer from 0
 
     def get_eye_landmarks(self, landmarks, indices):
         return np.array([(landmarks.part(i).x, landmarks.part(i).y) for i in indices], dtype=np.float32)
@@ -66,9 +56,9 @@ class EyeBlinkDetector:
 
     def log_blinks(self):
         """Logs the number of blinks and frequent eye movements in a 10-second interval."""
-        end_time = time.time()
-        start_time_str = datetime.datetime.fromtimestamp(self.start_time).strftime("%H:%M:%S")
-        end_time_str = datetime.datetime.fromtimestamp(end_time).strftime("%H:%M:%S")
+        end_time = self.start_time + 10  # Increment time in seconds
+        start_time_str = f"{self.start_time}s"
+        end_time_str = f"{end_time}s"
 
         # Save data to CSV file
         with open(self.output_file, 'a', newline='') as csvfile:
@@ -81,7 +71,7 @@ class EyeBlinkDetector:
         self.blink_count = 0
         self.frequent_movement_count = 0
         self.eye_positions.clear()
-        self.start_time = time.time()
+        self.start_time = end_time  # Move to the next interval
 
     def run(self):
         cap = cv2.VideoCapture(self.camera_id)
@@ -93,6 +83,8 @@ class EyeBlinkDetector:
         with open(self.output_file, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(["Time Interval", "Blinks", "Eye Movements"])
+
+        start_real_time = time.time()  # Track real elapsed time
 
         try:
             while True:
@@ -129,8 +121,9 @@ class EyeBlinkDetector:
                             self.frequent_movement_count += 1  # Increase count if movement is excessive
 
                 # Log data every 10 seconds
-                if time.time() - self.start_time >= 10:
+                if time.time() - start_real_time >= 10:
                     self.log_blinks()
+                    start_real_time = time.time()  # Reset real-time tracker
 
                 # Display the results
                 if self.display:
