@@ -27,3 +27,10 @@ AI Models: OpenCV, PyTorch
 
 
 This isn’t just a note-taking tool—it’s a smarter way to help both students and teachers understand learning patterns and make education more inclusive. 🚀
+
+
+
+![WhatsApp Image 2025-03-30 at 12 40 09 PM](https://github.com/user-attachments/assets/853539f7-f9bd-4d92-9195-81b6ea1404de)
+
+
+![WhatsApp Image 2025-03-30 at 12 40 32 PM(1)](https://github.com/user-attachments/assets/888c80b1-3eb7-4587-a5ce-28b3ee771604)
